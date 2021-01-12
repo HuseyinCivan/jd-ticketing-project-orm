@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.tomcat.jni.Local;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -21,21 +22,18 @@ public class BaseEntity {
 
     @Column(nullable = false,updatable = false)
     private LocalDateTime insertDateTime;
-
     @Column(nullable = false,updatable = false)
     private Long insertUserId;
-
     @Column(nullable = false)
     private LocalDateTime lastUpdateDateTime;
-
     @Column(nullable = false)
     private Long lastUpdateUserId;
 
-    private Boolean isDeleted =false;
+    private Boolean isDeleted=false;
 
     @PrePersist
     private void onPrePersist(){
-        this.insertDateTime = LocalDateTime.now();
+        this.insertDateTime=LocalDateTime.now();
         this.lastUpdateDateTime=LocalDateTime.now();
         this.insertUserId=1L;
         this.lastUpdateUserId=1L;
@@ -43,8 +41,10 @@ public class BaseEntity {
 
     @PreUpdate
     private void onPreUpdate(){
-        this.lastUpdateDateTime=LocalDateTime.now();
-        this.lastUpdateUserId = 1L;
+        this.lastUpdateDateTime= LocalDateTime.now();
+        this.lastUpdateUserId=1L;
     }
+
+
 
 }

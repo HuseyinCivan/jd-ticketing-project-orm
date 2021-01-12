@@ -1,10 +1,14 @@
 package com.cybertek.implementation;
 
+import com.cybertek.dto.ProjectDTO;
 import com.cybertek.dto.TaskDTO;
 import com.cybertek.entity.Task;
+import com.cybertek.entity.User;
 import com.cybertek.enums.Status;
+import com.cybertek.mapper.ProjectMapper;
 import com.cybertek.mapper.TaskMapper;
 import com.cybertek.repository.TaskRepository;
+import com.cybertek.repository.UserRepository;
 import com.cybertek.service.TaskService;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +22,14 @@ public class TaskServiceImpl implements TaskService {
 
     TaskRepository taskRepository;
     TaskMapper taskMapper;
+    ProjectMapper projectMapper;
+    UserRepository userRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper, ProjectMapper projectMapper, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.projectMapper = projectMapper;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -71,5 +79,46 @@ public class TaskServiceImpl implements TaskService {
             foundTask.get().setIsDeleted(true);
             taskRepository.save(foundTask.get());
         }
+    }
+
+    @Override
+    public int totalNonCompletedTasks(String projectCode) {
+        return taskRepository.totalNonCompletedTasks(projectCode);
+    }
+
+    @Override
+    public int totalCompletedTasks(String projectCode) {
+        return taskRepository.totalCompletedTasks(projectCode);
+    }
+
+    @Override
+    public void deleteByProject(ProjectDTO project) {
+
+        List<TaskDTO> taskDTOS = listAllByProject(project);
+        taskDTOS.forEach(taskDTO -> delete(taskDTO.getId()));
+    }
+
+
+    public List<TaskDTO> listAllByProject(ProjectDTO project){
+
+        List<Task> list = taskRepository.findAllByProject(projectMapper.convertToEntity(project));
+
+        return list.stream().map(obj -> {
+            return taskMapper.convertToDto(obj);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskDTO> listAllTasksByStatusIsNot(Status status) {
+        User user = userRepository.findByUserName("tom@ct.com");
+        List<Task> list = taskRepository.findAllByTaskStatusIsNotAndAssignedEmployee(status,user);
+        return list.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskDTO> listAllTasksByProjectManager() {
+        User user = userRepository.findByUserName("java@cybertekschool.com");
+        List<Task> tasks = taskRepository.findAllByProjectAssignedManager(user);
+        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
     }
 }

@@ -17,8 +17,6 @@ public class UserServiceImpl implements UserService {
 
 
     UserRepository userRepository;
-
-
     UserMapper userMapper;
 
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
@@ -29,39 +27,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> listAllUsers() {
         List<User> list = userRepository.findAll(Sort.by("firstName"));
-        //convert to DTO
-
-
-        return list.stream().map(obj -> {
-            return userMapper.convertToDto(obj);
-        }).collect(Collectors.toList());
+        return list.stream().map(obj ->{return userMapper.convertToDto(obj);}).collect(Collectors.toList());
     }
 
     @Override
     public UserDTO findByUserName(String username) {
         User user = userRepository.findByUserName(username);
-
         return userMapper.convertToDto(user);
     }
 
     @Override
     public void save(UserDTO dto) {
-        User obj = userMapper.convertToEntity(dto);
+        User obj =  userMapper.convertToEntity(dto);
         userRepository.save(obj);
     }
 
     @Override
     public UserDTO update(UserDTO dto) {
 
-        //find current user
+        //Find current user
         User user = userRepository.findByUserName(dto.getUserName());
-
-        //mape update user dto to entity object
+        //Map update user dto to entity object
         User convertedUser = userMapper.convertToEntity(dto);
         //set id to the converted object
         convertedUser.setId(user.getId());
         //save updated user
         userRepository.save(convertedUser);
+
         return findByUserName(dto.getUserName());
     }
 
@@ -72,21 +64,16 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    //hard delete
     @Override
-    public void deleteByUsername(String username) {
+    public void deleteByUserName(String username) {
         userRepository.deleteByUserName(username);
     }
 
+
     @Override
     public List<UserDTO> listAllByRole(String role) {
-
         List<User> users = userRepository.findAllByRoleDescriptionIgnoreCase(role);
-
-
-        return users.stream().map(obj -> {
-            return userMapper.convertToDto(obj);
-        }).collect(Collectors.toList());
+        return users.stream().map(obj -> {return userMapper.convertToDto(obj);}).collect(Collectors.toList());
     }
-
-
 }
